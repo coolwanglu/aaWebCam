@@ -42,6 +42,7 @@
     <canvas id="data-canvas" class="invisible"></canvas>
     <script>
       var Module = {
+        noExitRuntime: true,
         print: function() { 
             console.group.apply(console, arguments); 
             console.groupEnd();
