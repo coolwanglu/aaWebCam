@@ -9,11 +9,10 @@ var LibraryAAWeb = {
     attr: 0,
     font: 'Source Code Pro',
     font_size: 6, 
-    font_str: '',
-    bold_font_str: '',
-    fg_color: '#fff',
     bg_color: '#000',
-    dim_color: '#777',
+    dim_color: '#555',
+    normal_color: '#aaa',
+    bold_color: '#fff',
 
     MASK_NORMAL: 1,
     MASK_DIM: 2,
@@ -37,8 +36,7 @@ var LibraryAAWeb = {
     canvas_node.style.height = canvas_node.height / devicePixelRatio + canvas_node.offsetHeight - canvas_node.clientHeight + 'px';
 
     var ctx = aaweb.ctx = canvas_node.getContext('2d');
-    aaweb.font_str = aaweb.font_size * devicePixelRatio + 'px "' + aaweb.font + '"';
-    aaweb.bold_font_str = 'bold ' + aaweb.font_str;
+    ctx.font = aaweb.font_size * devicePixelRatio + 'px "' + aaweb.font + '"';
     ctx.textBaseline = 'bottom';
   },
   aaweb_get_width: function() {
@@ -56,15 +54,22 @@ var LibraryAAWeb = {
     var y = aaweb.y * aaweb.char_height;
     var w = p.length * aaweb.char_width;
     var ctx = aaweb.ctx;
+    var bg_style = aaweb.bg_color;
+    var fg_style = aaweb.normal_color;
     var attr = aaweb.attr;
-    ctx.fillStyle = (attr & aaweb.MASK_REVERSE) ? aaweb.fg_color : aaweb.bg_color;
+    if(attr & aaweb.MASK_DIM) 
+        fg_style = aaweb.dim_color;
+    if(attr & aaweb.MASK_BOLD)
+        fg_style = aaweb.bold_color;
+    if(attr & aaweb.MASK_REVERSE) {
+        var tmp = fg_style;
+        fg_style = bg_style;
+        bg_style = tmp;
+    }
+        
+    ctx.fillStyle = bg_style;
     ctx.fillRect(x, y, w, aaweb.char_height);
-    ctx.fillStyle = (attr & aaweb.MASK_DIM) 
-        ? aaweb.dim_color 
-        : ((attr & aaweb.MASK_REVERSE) 
-            ? aaweb.bg_color 
-            : aaweb.fg_color);
-    ctx.font = (aaweb.attr & (aaweb.MASK_BOLD | aaweb.MASK_BOLDFONT)) ? aaweb.bold_font_str : aaweb.font_str;
+    ctx.fillStyle = fg_style;
     ctx.fillText(p, x, y + aaweb.char_height, w);
     aaweb.x += p.length;
   },
