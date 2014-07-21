@@ -5,7 +5,6 @@ set -e
 mkdir web || true
 $EM_DIR/emcc \
     -Oz \
-    -profiling \
     -o web/aaWebCam.js \
     main.c \
     libaa.a \
