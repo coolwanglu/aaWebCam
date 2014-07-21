@@ -1,0 +1,123 @@
+<!doctype html>
+<!--  vim: set sw=2 ts=2 et : --> 
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title></title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href='http://fonts.googleapis.com/css?family=Source+Code+Pro'>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <a href="https://github.com/coolwanglu/aaWebCam.js"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub"></a>
+    <div class="container">
+      <div class="jumbotron">
+        <code>aaWebCam</code>
+      </div>
+      <div id="controls" class="form-inline">
+        <div class="form-group">
+          <label for="param-brightness">Brightness:</label>
+          <input id="param-brightness" type="range" min="0" max="255" step="1" value="0">
+        </div>
+        <div class="form-group">
+          <label for="param-contrast">Contrast:</label>
+          <input id="param-contrast" type="range" min="0" max="127" step="1" value="63">
+        </div>
+        <div class="form-group">
+          <label for="param-contrast">Gamma:</label>
+          <input id="param-gamma" type="range" min="0" max="1" step="0.01" value="1.0">
+        </div>
+      </div>
+      <canvas id="aa-canvas"></canvas>
+      <br>
+      <br>
+      <div class="footer">
+        <p>© <a target="_blank" href="http://coolwanglu.github.io/">Lu Wang</a> 2014</p>
+      </div>
+    </div>
+    <div id="aa-font-test" class="invisible"></div>
+    <video id="video" class="invisible"></video>
+    <canvas id="data-canvas" class="invisible"></canvas>
+    <script>
+      var Module = {
+        print: function() { 
+            console.group.apply(console, arguments); 
+            console.groupEnd();
+        },
+        printErr: function() { 
+            console.group.apply(console, arguments); 
+            console.groupEnd();
+        },
+        _main: function() {
+          Module['cwrap']('init', null, [])();
+          var img_width = Module['cwrap']('get_img_width', 'number', [])();
+          var img_height = Module['cwrap']('get_img_height', 'number', [])();
+
+          document.getElementById('param-brightness').addEventListener('change', function(e) {
+              Module['cwrap']('set_brightness', null, ['number'])(parseInt(e.target.value));
+          });
+          document.getElementById('param-contrast').addEventListener('change', function(e) {
+              Module['cwrap']('set_contrast', null, ['number'])(parseInt(e.target.value));
+          });
+          document.getElementById('param-gamma').addEventListener('change', function(e) {
+              Module['cwrap']('set_gamma', null, ['number'])(parseFloat(e.target.value));
+          });
+
+          var data_canvas = document.getElementById('data-canvas');
+          data_canvas.width = img_width;
+          data_canvas.height = img_height;
+
+          var video = document.getElementById('video');
+
+          navigator.getMedia = ( navigator.getUserMedia ||
+                         navigator.webkitGetUserMedia ||
+                         navigator.mozGetUserMedia ||
+                         navigator.msGetUserMedia);
+
+          navigator.getMedia( { video: true, audio: false },
+            function(stream) {
+              if (navigator.mozGetUserMedia) {
+                video.mozSrcObject = stream;
+              } else {
+                var vendorURL = window.URL || window.webkitURL;
+                video.src = vendorURL.createObjectURL(stream);
+              }
+              video.play();
+            },
+            function(err) {
+              console.log("An error occured! " + err);
+            }
+          );
+
+          var ctx = data_canvas.getContext('2d');
+          var ptr = Module['cwrap']('get_buffer', 'number', [])();
+          var FPS = 24;
+
+          function render() {
+            try {
+              ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, img_width, img_height);
+              var data = ctx.getImageData(0, 0, img_width, img_height).data;
+              var src_off = 0;
+              var dest = ptr;
+              for(var i = 0, l = img_width * img_height; i < l; ++i) {
+                var v = (0.2126 * data[src_off++]
+                  + 0.7152 * data[src_off++]
+                  + 0.0722 * data[src_off++]);
+                ++src_off;
+                HEAP8[dest++] = v&255;
+              }
+              Module['cwrap']('render', null, [])();
+            } catch(e) { }
+            setTimeout(render, 1.0/FPS);
+          }
+          video.addEventListener('canplay', function() {
+            setTimeout(render, 1.0/FPS);
+          });
+        }
+      };
+    </script>
+    <script src="aaWebCam.js"></script>
+  </body>
+</html>
