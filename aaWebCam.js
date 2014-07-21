@@ -1254,11 +1254,10 @@ var aaweb = {
  attr: 0,
  font: "Source Code Pro",
  font_size: 6,
- font_str: "",
- bold_font_str: "",
- fg_color: "#fff",
  bg_color: "#000",
- dim_color: "#777",
+ dim_color: "#555",
+ normal_color: "#aaa",
+ bold_color: "#fff",
  MASK_NORMAL: 1,
  MASK_DIM: 2,
  MASK_BOLD: 4,
@@ -1278,8 +1277,7 @@ function _aaweb_init() {
  canvas_node.style.width = canvas_node.width / devicePixelRatio + canvas_node.offsetWidth - canvas_node.clientWidth + "px";
  canvas_node.style.height = canvas_node.height / devicePixelRatio + canvas_node.offsetHeight - canvas_node.clientHeight + "px";
  var ctx = aaweb.ctx = canvas_node.getContext("2d");
- aaweb.font_str = aaweb.font_size * devicePixelRatio + 'px "' + aaweb.font + '"';
- aaweb.bold_font_str = "bold " + aaweb.font_str;
+ ctx.font = aaweb.font_size * devicePixelRatio + 'px "' + aaweb.font + '"';
  ctx.textBaseline = "bottom";
 }
 var ___errno_state = 0;
@@ -5248,11 +5246,19 @@ function _aaweb_print(p) {
  var y = aaweb.y * aaweb.char_height;
  var w = p.length * aaweb.char_width;
  var ctx = aaweb.ctx;
+ var bg_style = aaweb.bg_color;
+ var fg_style = aaweb.normal_color;
  var attr = aaweb.attr;
- ctx.fillStyle = attr & aaweb.MASK_REVERSE ? aaweb.fg_color : aaweb.bg_color;
+ if (attr & aaweb.MASK_DIM) fg_style = aaweb.dim_color;
+ if (attr & aaweb.MASK_BOLD) fg_style = aaweb.bold_color;
+ if (attr & aaweb.MASK_REVERSE) {
+  var tmp = fg_style;
+  fg_style = bg_style;
+  bg_style = tmp;
+ }
+ ctx.fillStyle = bg_style;
  ctx.fillRect(x, y, w, aaweb.char_height);
- ctx.fillStyle = attr & aaweb.MASK_DIM ? aaweb.dim_color : attr & aaweb.MASK_REVERSE ? aaweb.bg_color : aaweb.fg_color;
- ctx.font = aaweb.attr & (aaweb.MASK_BOLD | aaweb.MASK_BOLDFONT) ? aaweb.bold_font_str : aaweb.font_str;
+ ctx.fillStyle = fg_style;
  ctx.fillText(p, x, y + aaweb.char_height, w);
  aaweb.x += p.length;
 }
@@ -9258,19 +9264,19 @@ function _values(i1, i2, i3, i4, i5) {
   HEAP32[i5 >> 2] = ~~(+(HEAP32[i5 >> 2] | 0) * d16);
   STACKTOP = i6;
   return;
+ } else if ((i7 | 0) == 4) {
+  HEAP32[i2 >> 2] = (HEAP32[i10 >> 2] << 4) - (HEAP32[i2 >> 2] | 0);
+  HEAP32[i3 >> 2] = (HEAP32[i10 >> 2] << 4) - (HEAP32[i3 >> 2] | 0);
+  HEAP32[i4 >> 2] = (HEAP32[i10 >> 2] << 4) - (HEAP32[i4 >> 2] | 0);
+  HEAP32[i5 >> 2] = (HEAP32[i10 >> 2] << 4) - (HEAP32[i5 >> 2] | 0);
+  STACKTOP = i6;
+  return;
  } else if ((i7 | 0) == 1) {
   d16 = +HEAPF64[689];
   HEAP32[i2 >> 2] = ~~(+((HEAP32[i2 >> 2] | 0) + 1 | 0) / d16);
   HEAP32[i3 >> 2] = ~~(+((HEAP32[i3 >> 2] | 0) + 1 | 0) / d16);
   HEAP32[i4 >> 2] = ~~(+((HEAP32[i4 >> 2] | 0) + 1 | 0) / d16);
   HEAP32[i5 >> 2] = ~~(+((HEAP32[i5 >> 2] | 0) + 1 | 0) / d16);
-  STACKTOP = i6;
-  return;
- } else if ((i7 | 0) == 4) {
-  HEAP32[i2 >> 2] = (HEAP32[i10 >> 2] << 4) - (HEAP32[i2 >> 2] | 0);
-  HEAP32[i3 >> 2] = (HEAP32[i10 >> 2] << 4) - (HEAP32[i3 >> 2] | 0);
-  HEAP32[i4 >> 2] = (HEAP32[i10 >> 2] << 4) - (HEAP32[i4 >> 2] | 0);
-  HEAP32[i5 >> 2] = (HEAP32[i10 >> 2] << 4) - (HEAP32[i5 >> 2] | 0);
   STACKTOP = i6;
   return;
  } else if ((i7 | 0) == 3) {
@@ -10036,7 +10042,7 @@ function _web_init(i1, i2, i3, i4) {
  i4 = i4 | 0;
  i4 = STACKTOP;
  HEAP32[i3 >> 2] = 0;
- HEAP32[i3 + 4 >> 2] = 31;
+ HEAP32[i3 + 4 >> 2] = 23;
  _aa_recommendlow(5496, 1256);
  _aaweb_init();
  STACKTOP = i4;
