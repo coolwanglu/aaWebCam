@@ -34,7 +34,7 @@
       <br>
       <br>
       <div class="footer">
-        <p>© <a target="_blank" href="http://coolwanglu.github.io/">Lu Wang</a> 2014</p>
+        <p>© <a target="_blank" href="https://wang-lu.com/">Lu Wang</a> 2022</p>
       </div>
     </div>
     <div id="aa-font-test" class="invisible"></div>
@@ -79,12 +79,7 @@
 
           navigator.getMedia( { video: true, audio: false },
             function(stream) {
-              if (navigator.mozGetUserMedia) {
-                video.mozSrcObject = stream;
-              } else {
-                var vendorURL = window.URL || window.webkitURL;
-                video.src = vendorURL.createObjectURL(stream);
-              }
+              video.srcObject = stream;
               video.play();
             },
             function(err) {
